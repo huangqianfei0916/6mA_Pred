@@ -23,6 +23,7 @@
 ************
 ### Example
 ```py
+python start_train.py
 -train_data_path
 C:\\Users\\hqf\\PycharmProjects\\Bio/attention/lstm_attention/data/train_data.txt
 -train_pos

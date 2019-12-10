@@ -86,8 +86,6 @@ class LSTM_attention(nn.Module):
             sen_input = torch.cat((sen_w2v_input, sen_glo_input), dim=1)
         else:
             sen_input = sen_w2v_input
-        # print(sen_input.shape)
-        # exit()
 
         output, (h_n, c_n) = self.lstm_net(sen_input)
         # output : [batch_size, len_seq, n_hidden * 2]

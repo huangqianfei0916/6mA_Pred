@@ -133,7 +133,7 @@ if __name__ == '__main__':
     parser.add_argument('-rnn_layers', default=2)
     parser.add_argument('-vocab_size' )
     parser.add_argument('-dim',default=50)
-    parser.add_argument('-num_epochs',default=100)
+    parser.add_argument('-num_epochs',type=int,default=100)
     parser.add_argument('-weight_decay', default=0.0)
     parser.add_argument('-init', default=True)
 

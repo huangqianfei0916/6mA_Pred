@@ -1,6 +1,6 @@
 ''' Define the Layers '''
 import torch.nn as nn
-from attention.self_attention.transformer.SubLayers import MultiHeadAttention, PositionwiseFeedForward
+from self_attention.transformer.SubLayers import MultiHeadAttention, PositionwiseFeedForward
 
 __author__ = "Yu-Hsiang Huang"
 

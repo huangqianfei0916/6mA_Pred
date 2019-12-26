@@ -2,8 +2,8 @@
 import torch
 import torch.nn as nn
 import numpy as np
-import attention.self_attention.transformer.Constants as Constants
-from attention.self_attention.transformer.Layers import EncoderLayer
+import self_attention.transformer.Constants as Constants
+from self_attention.transformer.Layers import EncoderLayer
 
 __author__ = "Yu-Hsiang Huang"
 

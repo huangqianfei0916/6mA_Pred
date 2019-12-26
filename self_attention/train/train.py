@@ -7,10 +7,10 @@ import numpy as np
 import gensim
 from torch import nn
 from datetime import datetime
-from attention.self_attention.data.dataset1 import data1
-from attention.self_attention.config.config import DefaultConfig
-from attention.self_attention.transformer.Models import Transformer
-from attention.self_attention.transformer import Constants
+from self_attention.data.dataset1 import data1
+from self_attention.config.config import DefaultConfig
+from self_attention.transformer.Models import Transformer
+from self_attention.transformer import Constants
 
 
 def now():

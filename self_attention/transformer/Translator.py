@@ -4,8 +4,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from tf.transformer.Models import Transformer
-from tf.transformer.Beam import Beam
+from transformer.Models import Transformer
+from transformer.Beam import Beam
 
 class Translator(object):
     ''' Load with trained model and handle the beam search '''

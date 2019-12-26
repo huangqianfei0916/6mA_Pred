@@ -8,8 +8,8 @@ import argparse
 import gensim
 from torch import nn
 from datetime import datetime
-from attention.lstm_attention.net.lstm_attention import LSTM_attention
-from attention.lstm_attention.data.dataset import dataset1
+from lstm_attention.net.lstm_attention import LSTM_attention
+from lstm_attention.data.dataset import dataset1
 
 
 

@@ -8,19 +8,15 @@ import argparse
 import gensim
 from torch import nn
 from datetime import datetime
-from lstm_attention.net.lstm_attention import LSTM_attention
-from lstm_attention.data.dataset import dataset1
-
+from net.lstm_attention import LSTM_attention
+from data.dataset import dataset1
 
 
 def now():
     return str(time.strftime('%Y-%m-%d %H:%M:%S'))
 
 
-# ======================================================================================================================
 # 模型评估
-# ======================================================================================================================
-
 def get_acc(output, label):
     total = output.shape[0]
     _, pred_label = torch.max(output, 1)
@@ -29,10 +25,7 @@ def get_acc(output, label):
 
     return num_correct / total
 
-
-# ======================================================================================================================
 # 训练模型
-# ======================================================================================================================
 def train(model, train_data, valid_data, config, optimizer, criterion):
     model = model.to(config.device)
     prev_time = datetime.now()
@@ -106,10 +99,7 @@ def emb(model_path):
 
     return word2id,vectors
 
-# ======================================================================================================================
 # 主函数
-# ======================================================================================================================
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -117,7 +107,6 @@ if __name__ == '__main__':
     parser.add_argument('-seed', default=2019, help="seed")
     parser.add_argument('-freeze', default=False)
     parser.add_argument('-embedding1',help="embedding model",required=True)
-    parser.add_argument('-embedding2',help="embedding model")
     parser.add_argument('-train_data_path', required=True)
     parser.add_argument('-train_pos', type=int, required=True)
     parser.add_argument('-train_neg', type=int, required=True)
@@ -155,12 +144,7 @@ if __name__ == '__main__':
     w2id,vector=emb(opt.embedding1)
     word2vec = torch.Tensor(vector)
 
-    if opt.embedding2:
-        w2id2,vec=emb(opt.embedding2)
-        glove = torch.Tensor(vec)
-        model = LSTM_attention(weight1=word2vec, weight2=glove, opt=opt)
-    else:
-        model = LSTM_attention(weight1=word2vec, weight2=None, opt=opt)
+    model = LSTM_attention(weight1=word2vec,opt=opt)
 
     d=dataset1(opt,w2id)
     if opt.test_data_path:

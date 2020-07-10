@@ -25,7 +25,7 @@
 ```py
 python start_train.py
 -train_data_path
-C:\\Users\\hqf\\PycharmProjects\\Bio/attention/lstm_attention/data/train_data.txt
+train_data.txt
 -train_pos
 154000
 -train_neg
@@ -35,7 +35,7 @@ model.model
 -fix_len
 39
 -test_data_path
-C:\\Users\\hqf\\PycharmProjects\\Bio/attention/lstm_attention/data/test_data.txt
+test_data.txt
 -test_pos
 880
 -test_neg

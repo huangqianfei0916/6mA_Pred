@@ -4,8 +4,6 @@ from torch.utils.data import TensorDataset, DataLoader
 import gensim
 from sklearn.model_selection import train_test_split
 
-
-
 class dataset1():
     def __init__(self,opt,word_index_dict):
         self.opt=opt
@@ -32,9 +30,7 @@ class dataset1():
             index_list = index_list[:self.opt.fix_len]
         return index_list
 
-    # ======================================================================================================================
     # 划分数据集
-    # ======================================================================================================================
     def get_splite_data(self,opt):
         f = open(opt.train_data_path)
         documents = f.readlines()
@@ -60,10 +56,7 @@ class dataset1():
 
         return train_loader, valid_loader
 
-
-    # ======================================================================================================================
     # 划分数据集2
-    # ======================================================================================================================
     def get_splite_data2(self,opt):
         f = open(opt.train_data_path)
         documents = f.readlines()
@@ -90,10 +83,7 @@ class dataset1():
 
         return train_data, test_data
 
-
-    # ======================================================================================================================
     # 获得训练集
-    # ======================================================================================================================
     def get_trainset(self,opt):
         f = open(opt.train_data_path)
         documents = f.readlines()
@@ -113,10 +103,7 @@ class dataset1():
 
         return train_loader
 
-
-    # ======================================================================================================================
     # 获得测试集
-    # ======================================================================================================================
     def get_testset(self,opt):
         f = open(opt.test_data_path)
         documents = f.readlines()

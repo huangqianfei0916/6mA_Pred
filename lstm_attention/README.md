@@ -8,7 +8,6 @@
 -seed     |    随即种子
 -freeze     |     是否更新词向量
 -embedding1      |  词向量模型1
--embedding2|   	 词向量模型2 
 -batch_size|    批量大小 
 -test_data_path  | 	  测试集分词文件
 -test_pos   | 	正例数  

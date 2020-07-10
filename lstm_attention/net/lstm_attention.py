@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 class LSTM_attention(nn.Module):
 
-    def __init__(self, opt, weight1, weight2):
+    def __init__(self, opt, weight1):
         super(LSTM_attention, self).__init__()
 
         self.num_classes = opt.num_classes
@@ -13,11 +13,8 @@ class LSTM_attention(nn.Module):
         self.dropout = opt.dropout
         self.opt = opt
         self.weight1 = weight1
-        self.weight2 = weight2
 
         self.w2v_vocab_size, self.w2v_dim = weight1.shape
-        if opt.embedding2:
-            self.glove_vocab_size, self.glove_dim = weight2.shape
 
         self.hidden_dims = opt.hidden_dims
         self.rnn_layers = opt.rnn_layers
@@ -30,12 +27,6 @@ class LSTM_attention(nn.Module):
         else:
             self.w2v_embeddings = nn.Embedding(self.w2v_vocab_size, self.w2v_dim).from_pretrained(
                 embeddings=self.weight1, freeze=self.opt.freeze)
-        if self.opt.embedding2:
-            if self.opt.init:
-                self.Glo_embeddings = nn.Embedding(self.glove_vocab_size, self.glove_dim)
-            else:
-                self.Glo_embeddings = nn.Embedding(self.glove_vocab_size, self.glove_dim).from_pretrained(
-                    embeddings=self.weight2, freeze=self.opt.freeze)
 
         # attention layer
         self.attention_layer = nn.Sequential(
@@ -81,11 +72,7 @@ class LSTM_attention(nn.Module):
         x = x.long()
 
         sen_w2v_input = self.w2v_embeddings(x)
-        if self.opt.embedding2:
-            sen_glo_input = self.Glo_embeddings(x)
-            sen_input = torch.cat((sen_w2v_input, sen_glo_input), dim=1)
-        else:
-            sen_input = sen_w2v_input
+        sen_input = sen_w2v_input
 
         output, (h_n, c_n) = self.lstm_net(sen_input)
         # output : [batch_size, len_seq, n_hidden * 2]

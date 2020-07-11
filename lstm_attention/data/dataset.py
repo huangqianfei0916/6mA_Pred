@@ -51,8 +51,8 @@ class dataset1():
         train_data = TensorDataset(torch.from_numpy(train_x), torch.from_numpy(train_y))
         valid_data = TensorDataset(torch.from_numpy(val_x), torch.from_numpy(val_y))
 
-        train_loader = DataLoader(train_data, shuffle=False, batch_size=opt.batch_size)
-        valid_loader = DataLoader(valid_data, shuffle=False, batch_size=opt.batch_size)
+        train_loader = DataLoader(train_data, shuffle=True, batch_size=opt.batch_size)
+        valid_loader = DataLoader(valid_data, shuffle=True, batch_size=opt.batch_size)
 
         return train_loader, valid_loader
 
@@ -99,7 +99,7 @@ class dataset1():
         y = np.array(y)
 
         train_data = TensorDataset(torch.from_numpy(x), torch.from_numpy(y))
-        train_loader = DataLoader(train_data, shuffle=False, batch_size=opt.batch_size)
+        train_loader = DataLoader(train_data, shuffle=True, batch_size=opt.batch_size)
 
         return train_loader
 
@@ -119,6 +119,6 @@ class dataset1():
         y = np.array(y)
 
         test_data = TensorDataset(torch.from_numpy(x), torch.from_numpy(y))
-        test_loader = DataLoader(test_data, shuffle=False, batch_size=opt.batch_size)
+        test_loader = DataLoader(test_data, shuffle=True, batch_size=opt.batch_size)
 
         return test_loader

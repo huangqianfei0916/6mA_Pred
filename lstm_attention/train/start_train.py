@@ -2,14 +2,17 @@ import sys
 
 sys.path.extend(["../../", "../", "./"])
 import torch
-import pickle
+import numpy as np
+import pandas as pd
 import time
+from sklearn import metrics
 import argparse
 import gensim
 from torch import nn
 from datetime import datetime
 from net.lstm_attention import LSTM_attention
 from data.dataset import dataset1
+from sklearn.preprocessing import label_binarize
 
 
 def now():
@@ -60,12 +63,30 @@ def train(model, train_data, valid_data, config, optimizer, criterion):
             valid_loss = 0
             valid_acc = 0
             model = model.eval()
+            predict_all = np.array([], dtype=int)
+            labels_all = np.array([], dtype=int)
+            predict_pro = np.array([], dtype=float)
+            flag=0
             for im, label in valid_data:
                 with torch.no_grad():
                     im = im.to(config.device)
                     label = label.long().to(config.device)
 
                 output = model(im)
+
+                labels = label.data.cpu().numpy()
+                predict = torch.max(output.data, 1)[1].cpu().numpy()
+                pro = output.cpu().detach().numpy()
+                if flag==0:
+                    predict_pro=pro
+
+                labels_all = np.append(labels_all, labels)
+                predict_all = np.append(predict_all, predict)
+
+                if flag==1:
+                    predict_pro=np.vstack((predict_pro,pro))
+                flag=1
+
                 loss = criterion(output, label)
                 valid_loss += loss.item()
                 valid_acc += get_acc(output, label)
@@ -74,12 +95,27 @@ def train(model, train_data, valid_data, config, optimizer, criterion):
                     % (epoch, train_loss / len(train_data),
                        train_acc / len(train_data), valid_loss / len(valid_data),
                        valid_acc / len(valid_data)))
+            acc = metrics.accuracy_score(labels_all, predict_all)
+
+            y_one_hot=label_binarize(labels_all,np.arange(2))
+
+            print("AUC:", metrics.roc_auc_score(y_one_hot, predict_pro[:,1], average='micro'))
+
+            report = metrics.classification_report(labels_all, predict_all)
+            confusion = metrics.confusion_matrix(labels_all, predict_all)
+            print("ACC:",acc)
+
+            print("report:",report)
+            print("confusion:",confusion)
+            print("--------------------------------")
+            # pd.DataFrame(predict_all).to_csv("../model/pre{}_{}.pkl".format(epoch,valid_acc / len(valid_data)))
         else:
             epoch_str = ("Epoch %d. Train Loss: %f, Train Acc: %f, " %
                          (epoch, train_loss / len(train_data),
                           train_acc / len(train_data)))
         prev_time = cur_time
         print(epoch_str + time_str)
+        torch.save(model.state_dict(), "../model/model{}_{}.pkl".format(epoch,valid_acc / len(valid_data)))
 
 
 
@@ -104,7 +140,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     # parameter of train set
-    parser.add_argument('-seed', default=2019, help="seed")
+    parser.add_argument('-seed', default=2020, help="seed")
     parser.add_argument('-freeze', default=False)
     parser.add_argument('-embedding1',help="embedding model",required=True)
     parser.add_argument('-train_data_path', required=True)
@@ -115,8 +151,8 @@ if __name__ == '__main__':
     parser.add_argument('-test_pos',type=int)
     parser.add_argument('-test_neg',type=int)
     parser.add_argument('-fix_len', required=True,type=int)
-    parser.add_argument('-learning_rate', default=0.01)
-    parser.add_argument('-dropout', default=0.1)
+    parser.add_argument('-learning_rate', default=0.001)
+    parser.add_argument('-dropout', default=0.3)
     parser.add_argument('-num_classes', default=2)
     parser.add_argument('-hidden_dims', default=100)
     parser.add_argument('-rnn_layers', default=2)
@@ -159,5 +195,6 @@ if __name__ == '__main__':
         model_parameters = model.parameters()
 
     optimzier = torch.optim.Adam(model_parameters, lr=opt.learning_rate, weight_decay=opt.weight_decay)
+    # optimzier=torch.optim.SGD(model_parameters,lr=opt.learning_rate,weight_decay=opt.weight_decay)
 
     train(model, train_data, validate_data, opt, optimzier, criterion)

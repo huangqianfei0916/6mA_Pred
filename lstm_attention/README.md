@@ -32,6 +32,7 @@ python word2vec.py -word xxx
 -init|是否使用初始化的词向量；默认True
 ************
 ### Example
+* 独立测试用法（没有给测试数据集，默认对训练集合进行划分，一部分训练一部分测试）
 ```py
 python start_train.py
 -train_data_path
@@ -41,9 +42,10 @@ train_data.txt
 -train_neg
 154000
 -embedding1
-model.model
+word2vec.model
 -fix_len
 39
+# 非必须参数
 -test_data_path
 test_data.txt
 -test_pos

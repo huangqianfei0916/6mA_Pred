@@ -1,4 +1,4 @@
-* 前序步骤：
+#### 数据预处理
 * 第一步：
 ```
 python fasta2word.py -fasta xxx.fasta

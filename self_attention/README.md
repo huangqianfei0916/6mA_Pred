@@ -23,4 +23,11 @@ word.txt
 880
 -fix_len
 39
+# 非必须参数
+-test_data_path
+test_data.txt
+-test_pos
+880
+-test_neg
+880
 ```

@@ -12,6 +12,7 @@ python word2vec.py -word xxx
 ### 运行方式
 ****************
 ```
+python train.py
 -embedding1
 word2vec.model
 -train_data_path

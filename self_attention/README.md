@@ -1,4 +1,13 @@
 
+### 数据预处理
+* 第一步：
+```
+python fasta2word.py -fasta xxx.fasta
+```
+* 第二步(xxx是第一步中得到分词文件，最终会生成一个word2vec.model的词向量model)
+```
+python word2vec.py -word xxx
+```
 
 ### 运行方式
 ****************

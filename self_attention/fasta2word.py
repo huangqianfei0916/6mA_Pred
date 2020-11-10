@@ -50,8 +50,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     # parameter of train set
     parser.add_argument('-fasta', required=True,help="fasta file")
-    parser.add_argument('-kmer', default=3)
-    parser.add_argument('-splite', default=0)
+    parser.add_argument('-kmer', type=int,default=3)
+    parser.add_argument('-splite', type=int,default=0)
     opt = parser.parse_args()
 
     print(opt)

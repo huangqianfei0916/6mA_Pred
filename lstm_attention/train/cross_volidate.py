@@ -200,12 +200,13 @@ if __name__ == '__main__':
     x,y=d.get_data(opt)
     x=torch.from_numpy(x)
     y=torch.from_numpy(y)
-    index = [i for i in range(len(x))]
-    random.shuffle(index)
-    x = x[index]
-    y = y[index]
+
     k=opt.k
     for i in range(k):
+        index = [i for i in range(len(x))]
+        random.shuffle(index)
+        x = x[index]
+        y = y[index]
        
         X_train, y_train, X_valid, y_valid = d.get_k_fold_data(k, i, x, y)
         train_data = TensorDataset(X_train, y_train)

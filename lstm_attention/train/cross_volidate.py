@@ -194,10 +194,10 @@ if __name__ == '__main__':
     x, y = d.get_data(opt)
     x = torch.from_numpy(x)
     y = torch.from_numpy(y)
-    index = [i for i in range(len(x))]
-    random.shuffle(index)
-    x = x[index]
-    y = y[index]
+    # index = [i for i in range(len(x))]
+    # random.shuffle(index)
+    # x = x[index]
+    # y = y[index]
 
     for i in range(k):
 

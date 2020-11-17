@@ -156,8 +156,8 @@ if __name__ == '__main__':
     parser.add_argument('-train_neg', type=int, required=True)
     parser.add_argument('-batch_size', default=64)
     parser.add_argument('-fix_len', required=True,type=int)
-    parser.add_argument('-learning_rate', default=0.005)
-    parser.add_argument('-dropout', default=0.1)
+    parser.add_argument('-learning_rate', default=0.001)
+    parser.add_argument('-dropout', default=0.3)
     parser.add_argument('-num_classes', default=2)
     parser.add_argument('-hidden_dims', default=100)
     parser.add_argument('-rnn_layers', default=2)
@@ -184,31 +184,32 @@ if __name__ == '__main__':
     w2id,vector=emb(opt.embedding1)
     word2vec = torch.Tensor(vector)
 
-    model = LSTM_attention(weight1=word2vec,opt=opt)
+    # model = LSTM_attention(weight1=word2vec,opt=opt)
 
     d=dataset1(opt,w2id)
-    criterion = nn.CrossEntropyLoss()
 
-    if opt.freeze:
-        model_parameters = filter(lambda p: p.requires_grad, model.parameters())
-    else:
-        model_parameters = model.parameters()
-
-    optimzier = torch.optim.Adam(model_parameters, lr=opt.learning_rate, weight_decay=opt.weight_decay)
     # optimzier=torch.optim.SGD(model_parameters,lr=opt.learning_rate,weight_decay=opt.weight_decay)
 
-    x,y=d.get_data(opt)
-    x=torch.from_numpy(x)
-    y=torch.from_numpy(y)
-
     k=opt.k
+    x, y = d.get_data(opt)
+    x = torch.from_numpy(x)
+    y = torch.from_numpy(y)
+    index = [i for i in range(len(x))]
+    random.shuffle(index)
+    x = x[index]
+    y = y[index]
+
     for i in range(k):
-        index = [i for i in range(len(x))]
-        random.shuffle(index)
-        x = x[index]
-        y = y[index]
-       
+
         X_train, y_train, X_valid, y_valid = d.get_k_fold_data(k, i, x, y)
+        model = LSTM_attention(weight1=word2vec, opt=opt)
+        if opt.freeze:
+            model_parameters = filter(lambda p: p.requires_grad, model.parameters())
+        else:
+            model_parameters = model.parameters()
+
+        criterion = nn.CrossEntropyLoss()
+        optimzier = torch.optim.Adam(model_parameters, lr=opt.learning_rate, weight_decay=opt.weight_decay)
         train_data = TensorDataset(X_train, y_train)
         valid_data = TensorDataset(X_valid, y_valid)
 
@@ -216,3 +217,4 @@ if __name__ == '__main__':
         valid_loader = DataLoader(valid_data, shuffle=True, batch_size=opt.batch_size)
 
         train(model, train_loader, valid_loader, opt, optimzier, criterion)
+        model = LSTM_attention(weight1=word2vec,opt=opt)

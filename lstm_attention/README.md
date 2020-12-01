@@ -1,38 +1,38 @@
-### 数据预处理
-* 第一步：
+### Data preprocessing
+* The first step：
 ```
 python fasta2word.py -fasta xxx.fasta
 ```
-* 第二步(xxx是第一步中得到分词文件，最终会生成一个word2vec.model的词向量model)
+* The second step(XXX is the first step to get the word segmentation file, which will eventually generate a word vector model of word2vec.model)
 ```
 python word2vec.py -word xxx
 ```
 
 
-### 参数设置
+### Parameter Settings
 *********
-|参数|取值|
+|parameter|values|
 |:-|:-|  
-|-train_data_path|训练集分词文件|    
--train_pos|    	正例数  
--train_neg|       	反例数  
--seed     |    随即种子
--freeze     |     是否更新词向量
--embedding1      |  词向量模型1
--batch_size|    批量大小 
--test_data_path  | 	  测试集分词文件
--test_pos   | 	正例数  
--test_neg  |		反例数  
--rnn_layers|lstm层数
--fix_len   |		补全长度
--learning_rate   |学习率
--dropout| 防止过拟合
--hidden_dims|lstm的hidden_dim
--num_epochs|迭代次数
--init|是否使用初始化的词向量；默认True
+|-train_data_path|train file|    
+-train_pos|    	Number of positive examples  
+-train_neg|     Number of negative examples  
+-seed     |    seed
+-freeze     |     Embedding freeze
+-embedding1      |  Word embedding model
+-batch_size|    batch size
+-test_data_path  | 	  test file
+-test_pos   | 	Number of positive examples   
+-test_neg  |		Number of negative examples
+-rnn_layers|lstm layers
+-fix_len   |  fix length
+-learning_rate   | learning rate
+-dropout| dropout
+-hidden_dims|hidden_dim of lstm
+-num_epochs|epochs
+-init|default：True
 ************
 ### Example
-* 独立测试用法（没有给测试数据集，默认对训练集合进行划分，一部分训练一部分测试）
+* Independent testing（When no test set is provided, the training set is partitioned）
 ```py
 python start_train.py
 -train_data_path
@@ -45,7 +45,7 @@ train_data.txt
 word2vec.model
 -fix_len
 39
-# 非必须参数
+# Nonessential parameter
 -test_data_path
 test_data.txt
 -test_pos

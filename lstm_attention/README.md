@@ -1,3 +1,6 @@
+### Data
+* https://github.com/huangqianfei0916/6ma-rice/tree/master/dataset
+
 ### Data preprocessing
 * The first step：
 ```

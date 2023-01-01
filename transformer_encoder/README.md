@@ -1,3 +1,4 @@
+
 ### 数据预处理
 * 第一步：
 ```
@@ -12,8 +13,8 @@ python word2vec.py -word word.txt
 ****************
 ```
 python train.py
--embedding1
-word2vec.model
+-dict
+word.dict
 -train_data_path
 word.txt
 -train_pos

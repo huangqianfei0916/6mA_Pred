@@ -1,12 +1,15 @@
 '''
 Author: huangqianfei
 Date: 2023-01-01 14:16:58
-LastEditTime: 2023-01-01 15:39:30
+LastEditTime: 2023-01-01 20:26:22
 Description: 
 '''
+import os
 import sys
 
-sys.path.extend(["../../", "../", "./"])
+CUR_DIR = os.path.abspath(os.path.dirname(__file__))
+sys.path.append(CUR_DIR + "/../")
+
 import torch
 import time
 import numpy as np
@@ -15,7 +18,9 @@ import argparse
 
 from torch import nn
 from datetime import datetime
-from data.dataset1 import dataset1
+from torch.utils.data import DataLoader
+
+from data.dna_reader import Reader
 from transformer.Models import Transformer
 from transformer import Constants
 
@@ -25,38 +30,17 @@ def now():
     return str(time.strftime('%Y-%m-%d %H:%M:%S'))
 
 
-# model metrics
 def get_acc(output, label):
+    """metrics"""
     total = output.shape[0]
     _, pred_label = torch.max(output, 1)
-
     num_correct = (pred_label == label).sum().item()
 
     return num_correct / total
 
 
-
-def collate_fn(insts):
-    ''' Pad the instance to the max seq length in batch '''
-    insts=insts.tolist()
-    max_len = max(len(inst) for inst in insts)
-
-    batch_seq = np.array([
-        inst + [Constants.PAD] * (max_len - len(inst))
-        for inst in insts])
-
-    batch_pos = np.array([
-        [pos_i+1 if w_i != Constants.PAD else 0
-         for pos_i, w_i in enumerate(inst)] for inst in batch_seq])
-
-    batch_seq = torch.LongTensor(batch_seq)
-    batch_pos = torch.LongTensor(batch_pos)
-
-    return batch_seq, batch_pos
-
-
-# train model
-def train(model, train_data, valid_data, config, optimizer, criterion):
+def train(model, config, optimizer, criterion):
+    """train"""
     model = model.to(config.device)
     prev_time = datetime.now()
 
@@ -64,18 +48,31 @@ def train(model, train_data, valid_data, config, optimizer, criterion):
         model = model.train()
         train_loss = 0
         train_acc = 0
+        train_data = Reader(config)
+        train_loader = DataLoader(
+            train_data, 
+            shuffle = True, 
+            batch_size = config.batch_size,
+            collate_fn = train_data.collate_fn)
 
-        for im, label in train_data:
 
-            a,b=collate_fn(im.detach().numpy())
+        val_data = Reader(config)
+        val_loader = DataLoader(
+            val_data, 
+            shuffle = True, 
+            batch_size = config.batch_size,
+            collate_fn = train_data.collate_fn)
 
-            a = a.to(config.device)
-            b = b.to(config.device)
-            # im = im.to(config.device)
+        for step, item in enumerate(train_loader):
+            print(len(train_loader))
+            batch_seq, batch_pos, label = item
+
+            batch_seq = batch_seq.to(config.device)
+            batch_pos = batch_pos.to(config.device)
             label = label.long().to(config.device)
 
             # forward
-            output = model(a,b)
+            output = model(batch_seq, batch_pos)
 
             loss = criterion(output, label)
             # backward
@@ -91,55 +88,38 @@ def train(model, train_data, valid_data, config, optimizer, criterion):
         m, s = divmod(remainder, 60)
         time_str = "Time %02d:%02d:%02d" % (h, m, s)
 
-        if valid_data is not None:
+        if val_loader is not None:
             valid_loss = 0
             valid_acc = 0
             model = model.eval()
-            for im, label in valid_data:
+
+            for step, item in enumerate(val_loader):
+            
                 with torch.no_grad():
-
-                    a1, b1 = collate_fn(im.detach().numpy())
-
-                    a1 = a1.to(config.device)
-                    b1 = b1.to(config.device)
+                    batch_seq, batch_pos, label = item
+                    batch_seq = batch_seq.to(config.device)
+                    batch_pos = batch_pos.to(config.device)
                     label = label.long().to(config.device)
 
-                output = model(a1,b1)
+                output = model(batch_seq, batch_pos)
                 loss = criterion(output, label)
                 valid_loss += loss.item()
                 valid_acc += get_acc(output, label)
             epoch_str = (
                     "Epoch %d. Train Loss: %f, Train Acc: %f, Valid Loss: %f, Valid Acc: %f, "
-                    % (epoch, train_loss / len(train_data),
-                       train_acc / len(train_data), valid_loss / len(valid_data),
-                       valid_acc / len(valid_data)))
+                    % (epoch, train_loss / len(train_loader),
+                       train_acc / len(train_loader), valid_loss / len(val_loader),
+                       valid_acc / len(val_loader)))
         else:
             epoch_str = ("Epoch %d. Train Loss: %f, Train Acc: %f, " %
-                         (epoch, train_loss / len(train_data),
-                          train_acc / len(train_data)))
+                         (epoch, train_loss / len(train_loader), train_acc / len(train_loader)))
         prev_time = cur_time
         print(epoch_str + time_str)
 
 
-def emb(model_path):
-    """get word2id and vec"""
-    model = gensim.models.KeyedVectors.load_word2vec_format(model_path, binary=False)
-
-    vocab_list = model.index_to_key    
-
-    """将单词的下标和单词组成dict"""
-    word2id = {}
-    for id, word in enumerate(vocab_list):
-        word2id[word] = id
-
-    vectors = model.vectors
-
-    return word2id, vectors
-
-
 if __name__ == '__main__':
     """main"""
-    # gpu测试
+    # gpu test
     gpu = torch.cuda.is_available()
     print("GPU available: ", gpu)
     print("CuDNN: ", torch.backends.cudnn.enabled)
@@ -147,10 +127,9 @@ if __name__ == '__main__':
 
     torch.set_num_threads(4)
     parser = argparse.ArgumentParser()
-    # parameter of train set
-    parser.add_argument('-seed', default=2019, help="seed")
+    parser.add_argument('-seed', default=2023, help="seed")
     parser.add_argument('-freeze', default=False)
-    parser.add_argument('-embedding1', help="embedding model", required=True)
+    parser.add_argument('-dict', help="word dict", required=True)
     parser.add_argument('-train_data_path', required=True)
     parser.add_argument('-train_pos', type=int, required=True)
     parser.add_argument('-train_neg', type=int, required=True)
@@ -166,7 +145,7 @@ if __name__ == '__main__':
     parser.add_argument('-weight_decay', default=0.0)
     parser.add_argument('-d_k', default=64)
     parser.add_argument('-d_v', default=64)
-    parser.add_argument('-src_vocab_size', default=64)
+    parser.add_argument('-src_vocab_size', default=10000)
     parser.add_argument('-d_model', default=100)
     parser.add_argument('-d_word_vec', default=100)
     parser.add_argument('-d_inner', default=512)
@@ -177,23 +156,11 @@ if __name__ == '__main__':
 
     config = parser.parse_args()
     config.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print(config)
-    # config = DefaultConfig()
+    # print(config)
 
     torch.manual_seed(config.seed)
     torch.cuda.manual_seed(config.seed)
     torch.cuda.manual_seed_all(config.seed)
-
-    w2id, vector = emb(config.embedding1)
-    word2vec = torch.Tensor(vector)
-
-    d=dataset1(config,w2id)
-
-    if config.test_data_path:
-        train_data = d.get_trainset(config)
-        validate_data = d.get_testset(config)
-    else:
-        train_data, validate_data = d.get_splite_data(config)
 
     model = Transformer(
         config.src_vocab_size,
@@ -214,6 +181,6 @@ if __name__ == '__main__':
     else:
         model_parameters = model.parameters()
 
-    optimzier = torch.optim.Adam(model_parameters, lr=config.learning_rate, weight_decay=config.weight_decay)
+    optimzier = torch.optim.Adam(model_parameters, lr = config.learning_rate, weight_decay = config.weight_decay)
 
-    train(model, train_data, validate_data, config, optimzier, criterion)
+    train(model, config, optimzier, criterion)

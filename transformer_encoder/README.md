@@ -1,15 +1,11 @@
 
 ### 数据预处理
-* 第一步：
+* 对fasta文件进行切词，模型采用3mer
 ```
-python fasta2word.py -fasta input.fasta
-```
-* 第二步(word.txt是第一步中得到分词文件，最终会生成一个word2vec.model的词向量model)
-```
-python word2vec.py -word word.txt
+python fasta2word.py -fasta input.fasta -kmer 3
 ```
 
-### 运行方式
+### 运行,需要提供自己的词典-word.dict
 ****************
 ```
 python train.py

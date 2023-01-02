@@ -1,7 +1,7 @@
 '''
 Author: huangqianfei
 Date: 2023-01-01 14:16:58
-LastEditTime: 2023-01-01 20:26:22
+LastEditTime: 2023-01-02 09:58:55
 Description: 
 '''
 import os
@@ -64,7 +64,6 @@ def train(model, config, optimizer, criterion):
             collate_fn = train_data.collate_fn)
 
         for step, item in enumerate(train_loader):
-            print(len(train_loader))
             batch_seq, batch_pos, label = item
 
             batch_seq = batch_seq.to(config.device)

@@ -1,11 +1,12 @@
 '''
 Author: huangqianfei
 Date: 2023-01-01 14:16:58
-LastEditTime: 2023-01-01 15:32:51
+LastEditTime: 2023-01-02 19:26:14
 Description: 
 '''
 import os
 import sys
+import torch
 
 CUR_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(CUR_DIR)
@@ -13,7 +14,30 @@ sys.path.append(CUR_DIR)
 import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
-from Modules import ScaledDotProductAttention
+
+
+class ScaledDotProductAttention(nn.Module):
+    ''' Scaled Dot-Product Attention '''
+
+    def __init__(self, temperature, attn_dropout=0.1):
+        super().__init__()
+        self.temperature = temperature
+        self.dropout = nn.Dropout(attn_dropout)
+        self.softmax = nn.Softmax(dim=2)
+
+    def forward(self, q, k, v, mask=None):
+
+        attn = torch.bmm(q, k.transpose(1, 2))
+        attn = attn / self.temperature
+
+        if mask is not None:
+            attn = attn.masked_fill(mask, -np.inf)
+
+        attn = self.softmax(attn)
+        attn = self.dropout(attn)
+        output = torch.bmm(attn, v)
+
+        return output, attn
 
 
 class MultiHeadAttention(nn.Module):
@@ -29,11 +53,11 @@ class MultiHeadAttention(nn.Module):
         self.w_qs = nn.Linear(d_model, n_head * d_k)
         self.w_ks = nn.Linear(d_model, n_head * d_k)
         self.w_vs = nn.Linear(d_model, n_head * d_v)
-        nn.init.normal_(self.w_qs.weight, mean=0, std=np.sqrt(2.0 / (d_model + d_k)))
-        nn.init.normal_(self.w_ks.weight, mean=0, std=np.sqrt(2.0 / (d_model + d_k)))
-        nn.init.normal_(self.w_vs.weight, mean=0, std=np.sqrt(2.0 / (d_model + d_v)))
+        nn.init.normal_(self.w_qs.weight, mean = 0, std = np.sqrt(2.0 / (d_model + d_k)))
+        nn.init.normal_(self.w_ks.weight, mean = 0, std = np.sqrt(2.0 / (d_model + d_k)))
+        nn.init.normal_(self.w_vs.weight, mean = 0, std = np.sqrt(2.0 / (d_model + d_v)))
 
-        self.attention = ScaledDotProductAttention(temperature=np.power(d_k, 0.5))
+        self.attention = ScaledDotProductAttention(temperature = np.power(d_k, 0.5))
         self.layer_norm = nn.LayerNorm(d_model)
 
         self.fc = nn.Linear(n_head * d_v, d_model)
@@ -56,15 +80,14 @@ class MultiHeadAttention(nn.Module):
         k = self.w_ks(k).view(sz_b, len_k, n_head, d_k)
         v = self.w_vs(v).view(sz_b, len_v, n_head, d_v)
 
-        # q, k, v(batch, seq_len, head, dim)
+        # q, k, v (batch, seq_len, head, dim)
         q = q.permute(2, 0, 1, 3).contiguous().view(-1, len_q, d_k) # (n*b) x lq x dk
         k = k.permute(2, 0, 1, 3).contiguous().view(-1, len_k, d_k) # (n*b) x lk x dk
         v = v.permute(2, 0, 1, 3).contiguous().view(-1, len_v, d_v) # (n*b) x lv x dv
-
-
-        mask = mask.repeat(n_head, 1, 1) # (n*b) x .. x ..
-        # 这里的 output 是 context vector， attn是经过dropout之后的权重
-        output, attn = self.attention(q, k, v, mask=mask)
+        
+        # mask:[b, lq, lk] -> [b * head, lq, lk]
+        mask = mask.repeat(n_head, 1, 1)
+        output, attn = self.attention(q, k, v, mask = mask)
 
         output = output.view(n_head, sz_b, len_q, d_v)
         output = output.permute(1, 2, 0, 3).contiguous().view(sz_b, len_q, -1) # b x lq x (n*dv)
@@ -79,8 +102,8 @@ class PositionwiseFeedForward(nn.Module):
 
     def __init__(self, d_in, d_hid, dropout=0.1):
         super().__init__()
-        self.w_1 = nn.Conv1d(d_in, d_hid, 1) # position-wise
-        self.w_2 = nn.Conv1d(d_hid, d_in, 1) # position-wise
+        self.w_1 = nn.Conv1d(d_in, d_hid, 1)
+        self.w_2 = nn.Conv1d(d_hid, d_in, 1)
         self.layer_norm = nn.LayerNorm(d_in)
         self.dropout = nn.Dropout(dropout)
 

@@ -1,7 +1,7 @@
 '''
 Author: huangqianfei
 Date: 2023-01-01 14:16:58
-LastEditTime: 2023-01-02 09:58:55
+LastEditTime: 2023-01-02 14:21:30
 Description: 
 '''
 import os
@@ -15,11 +15,11 @@ import time
 import numpy as np
 import gensim
 import argparse
+import torch.nn as nn
+import torchsummary
 
-from torch import nn
-from datetime import datetime
 from torch.utils.data import DataLoader
-
+from datetime import datetime
 from data.dna_reader import Reader
 from transformer.Models import Transformer
 from transformer import Constants
@@ -138,15 +138,15 @@ if __name__ == '__main__':
     parser.add_argument('-test_neg', type=int)
     parser.add_argument('-fix_len', required=True, type=int)
     parser.add_argument('-learning_rate', default=0.005)
-    parser.add_argument('-dropout', default=0.3)
+    parser.add_argument('-dropout', default=0.1)
     parser.add_argument('-num_classes', default=2)
     parser.add_argument('-num_epochs', type=int, default=50)
     parser.add_argument('-weight_decay', default=0.0)
     parser.add_argument('-d_k', default=64)
     parser.add_argument('-d_v', default=64)
     parser.add_argument('-src_vocab_size', default=10000)
-    parser.add_argument('-d_model', default=100)
-    parser.add_argument('-d_word_vec', default=100)
+    parser.add_argument('-d_model', default=512)
+    parser.add_argument('-d_word_vec', default=512)
     parser.add_argument('-d_inner', default=512)
     parser.add_argument('-n_layers', default=1)
     parser.add_argument('-n_head', default=8)
@@ -162,16 +162,16 @@ if __name__ == '__main__':
     torch.cuda.manual_seed_all(config.seed)
 
     model = Transformer(
-        config.src_vocab_size,
-        config.fix_len,
-        d_k=config.d_k,
-        d_v=config.d_v,
-        d_model=config.d_model,
-        d_word_vec=config.d_word_vec,
-        d_inner=config.d_inner,
-        n_layers=config.n_layers,
-        n_head=config.n_head,
-        dropout=config.dropout)
+        n_src_vocab = config.src_vocab_size,
+        len_max_seq = config.fix_len,
+        d_k = config.d_k,
+        d_v = config.d_v,
+        d_model = config.d_model,
+        d_word_vec = config.d_word_vec,
+        d_inner = config.d_inner,
+        n_layers = config.n_layers,
+        n_head = config.n_head,
+        dropout = config.dropout)
 
     criterion = nn.CrossEntropyLoss()
 

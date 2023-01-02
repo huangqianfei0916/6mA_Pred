@@ -1,7 +1,7 @@
 '''
 Author: huangqianfei
 Date: 2023-01-01 14:16:58
-LastEditTime: 2023-01-02 14:21:30
+LastEditTime: 2023-01-02 21:33:09
 Description: 
 '''
 import os
@@ -16,8 +16,8 @@ import numpy as np
 import gensim
 import argparse
 import torch.nn as nn
-import torchsummary
 
+from torchsummary import summary
 from torch.utils.data import DataLoader
 from datetime import datetime
 from data.dna_reader import Reader
@@ -180,6 +180,10 @@ if __name__ == '__main__':
     else:
         model_parameters = model.parameters()
 
+    # for parameter in model.parameters():
+    #     print(parameter.shape)
+    summary(model, [(39,), (39,)], dtypes=[torch.long, torch.long], device='cpu')
+    
     optimzier = torch.optim.Adam(model_parameters, lr = config.learning_rate, weight_decay = config.weight_decay)
 
     train(model, config, optimzier, criterion)

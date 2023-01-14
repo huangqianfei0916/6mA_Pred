@@ -1,7 +1,7 @@
 '''
 Author: huangqianfei
 Date: 2023-01-01 14:16:58
-LastEditTime: 2023-01-02 21:33:09
+LastEditTime: 2023-01-14 15:45:52
 Description: 
 '''
 import os
@@ -23,6 +23,7 @@ from datetime import datetime
 from data.dna_reader import Reader
 from transformer.Models import Transformer
 from transformer import Constants
+from transformer.Optim import ScheduledOptim
 
 
 def now():
@@ -77,7 +78,7 @@ def train(model, config, optimizer, criterion):
             # backward
             optimizer.zero_grad()
             loss.backward()
-            optimizer.step()
+            optimizer.step_and_update_lr()
 
             train_loss += loss.item()
             train_acc += get_acc(output, label)
@@ -180,10 +181,16 @@ if __name__ == '__main__':
     else:
         model_parameters = model.parameters()
 
-    # for parameter in model.parameters():
-    #     print(parameter.shape)
-    summary(model, [(39,), (39,)], dtypes=[torch.long, torch.long], device='cpu')
-    
-    optimzier = torch.optim.Adam(model_parameters, lr = config.learning_rate, weight_decay = config.weight_decay)
+    # summary(model, [(39,), (39,)], dtypes=[torch.long, torch.long], device='cpu')
 
-    train(model, config, optimzier, criterion)
+    print("================================================")
+    for key, value in model.named_parameters():
+        print(key)
+        print(value.shape)
+    print("================================================")
+    
+
+    optimizer = ScheduledOptim(
+        torch.optim.Adam(model_parameters, betas=(0.9, 0.98), eps = 1e-09), config.d_model, 100)
+
+    train(model, config, optimizer, criterion)

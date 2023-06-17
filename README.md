@@ -1,5 +1,4 @@
-### Data
-* https://github.com/huangqianfei0916/6mA_attention/tree/master/data/dataset
+
 ### Data preprocessing
 * The first step：
 ```
